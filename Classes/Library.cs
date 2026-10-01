@@ -2,97 +2,173 @@ namespace biblioteca.Classes;
 
 public class Library
 {
-    private Book[] _books = new Book[20];
-    private int _last = 0;
+
+    private Book[,] _books = new Book[20, 3];
+
+    private string[] _sucusarNames =
+    {
+        "Itla Books",
+        "UASD Books",
+        "Central Books"
+    };
+
+    private int _total = 0;
 
     // O(1)
     public int Capacity() => _books.Length;
 
-    // O(n)
+    // O(n^2)
     public void ListarBooks()
     {
+        if (_total == 0)
+        {
+            Console.WriteLine("No hay libros registrados.");
+            return;
+        }
+
         Console.WriteLine("--- Libros registrados ---");
 
-        for (int i = 0; i < _last; i++)
+        for (int i = 0; i < _books.GetLength(0); i++)
         {
-            if (_books[i] != null)
+            for (int j = 0; j < _books.GetLength(1); j++)
             {
-                Console.WriteLine($"{i + 1}. {_books[i].Title}");
+                if (_books[i, j] != null)
+                {
+                    Console.WriteLine(
+                        $"{i + 1}. Titulo: {_books[i, j].Title} - " +
+                        $"Sucursal: {_sucusarNames[j]} - " +
+                        $"Id: {_books[i, j].Id} - " +
+                        $"Cantidad: {_books[i, j].Quantity}"
+                    );
+                }
             }
         }
 
         Console.WriteLine("--------------------------");
     }
 
-    // O(n)
-    public (Book book, int indice) FindById(int id)
+    // O(n^2)
+    public (Book book, int indice, int sucursal) FindById(int id)
     {
-        for (int i = 0; i < _last; i++)
+        for (int i = 0; i < _books.GetLength(0); i++)
         {
-            if (_books[i] != null && _books[i].Id == id)
+            for (int j = 0; j < _books.GetLength(1); j++)
             {
-                Console.WriteLine(
-                    "[--------------- Información del libro ------------]"
-                );
-
-                Console.WriteLine(
-                    $"Id: {_books[i].Id}\n" +
-                    $"Título: {_books[i].Title}\n" +
-                    $"Autor: {_books[i].Author}\n" +
-                    $"ISBN: {_books[i].ISBN}\n" +
-                    $"Cantidad: {_books[i].Quantity}"
-                );
-
-                Console.WriteLine(
-                    "----------------------------------------------------"
-                );
-
-                return (_books[i], i);
+                if (_books[i, j] != null &&
+                    _books[i, j].Id == id)
+                {
+                    return (_books[i, j], i, j);
+                }
             }
         }
 
-        Console.WriteLine("Libro no encontrado");
+        Console.WriteLine("Libro no encontrado.");
+
+        return (null, -1, -1);
+    }
+
+    // O(n)
+    public (Book book, int indice) FindById(
+        int id,
+        int sucursal)
+    {
+        for (int i = 0; i < _books.GetLength(0); i++)
+        {
+            if (_books[i, sucursal] != null &&
+                _books[i, sucursal].Id == id)
+            {
+                return (_books[i, sucursal], i);
+            }
+        }
+
         return (null, -1);
     }
 
     // O(n)
-    private Book FindBook(Book book)
+    public void ConsultarDisponibilidad(
+        int id,
+        int sucursal)
     {
-        for (int i = 0; i < _last; i++)
+        (Book book, int indice) =
+            FindById(id, sucursal);
+
+        if (book != null)
         {
-            if (_books[i] != null &&
-                _books[i].Title == book.Title &&
-                _books[i].ISBN == book.ISBN)
+            Console.WriteLine(
+                $"Libro: {_books[indice, sucursal].Title}"
+            );
+
+            Console.WriteLine(
+                $"Sucursal: {_sucusarNames[sucursal]}"
+            );
+
+            Console.WriteLine(
+                $"Cantidad disponible: " +
+                $"{_books[indice, sucursal].Quantity}"
+            );
+
+            return;
+        }
+
+        Console.WriteLine(
+            $"El libro no esta disponible en la sucursal " +
+            $"{_sucusarNames[sucursal]}"
+        );
+    }
+
+    // O(n^2)
+    private (Book book, int indice) FindBook(Book book)
+    {
+        for (int i = 0; i < _books.GetLength(0); i++)
+        {
+            for (int j = 0; j < _books.GetLength(1); j++)
             {
-                return _books[i];
+                if (_books[i, j] != null &&
+                    _books[i, j].Title == book.Title &&
+                    _books[i, j].ISBN == book.ISBN)
+                {
+                    return (_books[i, j], i);
+                }
             }
         }
 
-        return null;
+        return (null, -1);
     }
 
-    // O(n)
+    // O(n^2)
     public void RegistrarBook()
     {
-        if (_last >= _books.Length)
+        if (_total >= _books.GetLength(0))
         {
             Console.WriteLine(
-                "Se ha alcanzado la capacidad máxima del almacén."
+                "Se ha alcanzado la capacidad máxima " +
+                "de libros."
             );
+
+            return;
+        }
+
+        Console.Write("Sucursal: ");
+        int sucursal = int.Parse(Console.ReadLine()) - 1;
+
+        if (sucursal < 0 ||
+            sucursal >= _books.GetLength(1))
+        {
+            Console.WriteLine("Sucursal no válida.");
             return;
         }
 
         Console.Write("Título: ");
-        var titulo = Console.ReadLine();
+        string titulo = Console.ReadLine();
 
         Console.Write("Autor: ");
-        var autor = Console.ReadLine();
+        string autor = Console.ReadLine();
 
         Console.Write("ISBN: ");
-        var isbn = Console.ReadLine();
+        string isbn = Console.ReadLine();
 
         Console.Write("Cantidad: ");
-        var cantidad = int.Parse(Console.ReadLine());
+        int cantidad = int.Parse(Console.ReadLine());
 
         Book book = new Book(
             titulo,
@@ -101,121 +177,238 @@ public class Library
             cantidad
         );
 
-        InsertarBook(book);
+        InsertarBook(book, sucursal);
     }
 
-    // O(n) por FindBook()
-    public void InsertarBook(Book book)
+    // O(n^2)
+    public void InsertarBook(
+        Book book,
+        int sucursal)
     {
-        if (_last >= _books.Length)
+        if (sucursal < 0 ||
+            sucursal >= _books.GetLength(1))
         {
-            Console.WriteLine(
-                "Se ha alcanzado la capacidad máxima del almacén."
-            );
+            Console.WriteLine("Sucursal no válida.");
             return;
         }
 
-        Book existente = FindBook(book);
+        (Book existente, int indice) =
+            FindBook(book);
 
         if (existente != null)
         {
-            existente.AddQuantity(book.Quantity);
+            if (_books[indice, sucursal] != null)
+            {
+                _books[indice, sucursal].AddQuantity(
+                    book.Quantity
+                );
+
+                Console.WriteLine(
+                    "El libro ya existe en esta sucursal. " +
+                    "Se actualizó la cantidad."
+                );
+
+                return;
+            }
+
+            _books[indice, sucursal] = new Book(
+                existente.Title,
+                existente.Author,
+                existente.ISBN,
+                book.Quantity
+            );
 
             Console.WriteLine(
-                "El libro ya existe. Se actualizó la cantidad."
+                $"Libro registrado correctamente en " +
+                $"{_sucusarNames[sucursal]}."
             );
 
             return;
         }
 
-        _books[_last] = book;
-        _last++;
-
-        Console.WriteLine("Libro registrado correctamente.");
-    }
-
-    // O(n)
-    public void EditarBook(int id)
-    {
-        var (book, _) = FindById(id);
-
-        if (book == null)
+        if (_total >= _books.GetLength(0))
         {
+            Console.WriteLine(
+                "Se ha alcanzado la capacidad máxima " +
+                "de libros."
+            );
+
             return;
         }
 
-        Console.WriteLine($"{book.Id} - {book.Title}");
+        _books[_total, sucursal] = book;
 
-        Console.Write(
-            $"Título del libro: {book.Title}. " +
-            "Presione Enter para no editar: "
+        _total++;
+
+        Console.WriteLine(
+            $"Libro registrado correctamente en " +
+            $"{_sucusarNames[sucursal]}."
         );
-
-        var nombre = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(nombre))
-        {
-            book.UpdateTitle(nombre);
-        }
-
-        Console.Write(
-            $"ISBN del libro: {book.ISBN}. " +
-            "Presione Enter para no editar: "
-        );
-
-        var isbn = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(isbn))
-        {
-            book.UpdateISBN(isbn);
-        }
-
-        Console.Write(
-            $"Autor del libro: {book.Author}. " +
-            "Presione Enter para no editar: "
-        );
-
-        var autor = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(autor))
-        {
-            book.UpdateAuthor(autor);
-        }
-
-        Console.Write(
-            $"Stock del libro: {book.Quantity}. " +
-            "Presione Enter para no editar: "
-        );
-
-        var stockInput = Console.ReadLine();
-
-        if (int.TryParse(stockInput, out int stock) && stock >= 0)
-        {
-            book.UpdateQuantity(stock);
-        }
-
-        Console.WriteLine("Libro actualizado correctamente.");
     }
 
     // O(n)
-    public void EliminarBook(int id)
+    public void ActualizarDisponibilidad(
+        int id,
+        int sucursal,
+        int cantidad)
     {
-        var (book, indice) = FindById(id);
+        (Book book, int indice) =
+            FindById(id, sucursal);
 
-        if (book == null)
+        if (book != null)
         {
+            _books[indice, sucursal].AddQuantity(
+                cantidad
+            );
+
+            Console.WriteLine(
+                "Disponibilidad actualizada correctamente."
+            );
+
             return;
         }
 
-        for (int i = indice; i < _last - 1; i++)
+        Console.WriteLine("Libro no encontrado.");
+    }
+
+    // O(n^2)
+    public void TotalDisponibleBook(int id)
+    {
+        int total = 0;
+
+        for (int i = 0; i < _books.GetLength(0); i++)
         {
-            _books[i] = _books[i + 1];
+            for (int j = 0; j < _books.GetLength(1); j++)
+            {
+                if (_books[i, j] != null &&
+                    _books[i, j].Id == id)
+                {
+                    total += _books[i, j].Quantity;
+                }
+            }
         }
 
-        _books[_last - 1] = null;
-
-        _last--;
-
-        Console.WriteLine("Libro eliminado correctamente.");
+        Console.WriteLine(
+            $"Total disponible del libro: {total}"
+        );
     }
+
+    // O(n)
+    public void TotalInventarioSucursal(
+        int sucursal)
+    {
+        if (sucursal < 0 ||
+            sucursal >= _books.GetLength(1))
+        {
+            Console.WriteLine("Sucursal no válida.");
+            return;
+        }
+
+        int total = 0;
+
+        for (int i = 0; i < _books.GetLength(0); i++)
+        {
+            if (_books[i, sucursal] != null)
+            {
+                total += _books[i, sucursal].Quantity;
+            }
+        }
+
+        Console.WriteLine(
+            $"Total de inventario en " +
+            $"{_sucusarNames[sucursal]}: {total}"
+        );
+    }
+
+    // O(n^2)
+    public void MostrarLibrosBajoInventario()
+    {
+        Console.WriteLine(
+            "--- Libros con bajo inventario ---"
+        );
+
+        for (int i = 0; i < _books.GetLength(0); i++)
+        {
+            for (int j = 0; j < _books.GetLength(1); j++)
+            {
+                if (_books[i, j] != null &&
+                    _books[i, j].Quantity <= 3)
+                {
+                    Console.WriteLine(
+                        $"Titulo: {_books[i, j].Title} - " +
+                        $"Sucursal: {_sucusarNames[j]} - " +
+                        $"Cantidad: {_books[i, j].Quantity}"
+                    );
+                }
+            }
+        }
+
+        Console.WriteLine("--------------------------");
+    }
+
+    // O(n^2)
+    public void SucursalMayorDisponibilidad(
+        int id)
+    {
+        int mayorCantidad = -1;
+        int mayorSucursal = -1;
+
+        for (int j = 0;
+             j < _books.GetLength(1);
+             j++)
+        {
+            for (int i = 0;
+                 i < _books.GetLength(0);
+                 i++)
+            {
+                if (_books[i, j] != null &&
+                    _books[i, j].Id == id)
+                {
+                    if (_books[i, j].Quantity >
+                        mayorCantidad)
+                    {
+                        mayorCantidad =
+                            _books[i, j].Quantity;
+
+                        mayorSucursal = j;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        if (mayorSucursal == -1)
+        {
+            Console.WriteLine("Libro no encontrado.");
+            return;
+        }
+
+        Console.WriteLine(
+            $"Sucursal con mayor disponibilidad: " +
+            $"{_sucusarNames[mayorSucursal]} - " +
+            $"Cantidad: {mayorCantidad}"
+        );
+    }
+    //// O(n)
+    //public void EliminarBook(int id, int sucursar)
+    //{
+    //    var (book, indice) = FindById(id);
+
+    //    if (book == null)
+    //    {
+    //        return;
+    //    }
+
+    //    for (int i = indice; i < _last - 1; i++)
+    //    {
+    //        _books[i] = _books[i + 1];
+    //    }
+
+    //    _books[_last - 1] = null;
+
+    //    _last--;
+
+    //    Console.WriteLine("Libro eliminado correctamente.");
+    //}
 }

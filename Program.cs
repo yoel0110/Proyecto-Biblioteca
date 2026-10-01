@@ -1,114 +1,309 @@
-﻿ 
-using biblioteca.Classes;
-using System.Threading.Channels;
+﻿using biblioteca.Classes;
 
-namespace  biblioteca
+namespace biblioteca
 {
     public class Program
     {
         private static Library _library;
         public static bool _displayMenu = true;
+
         public static void Main(string[] args)
         {
-            
             _library = new Library();
+
             InsertarBooks();
+
             while (_displayMenu)
             {
                 DisplayMenu();
             }
-
         }
+
         public static void InteractionMenu()
         {
-            Console.WriteLine("Opcion ->");
+            Console.Write("Opcion -> ");
+
             int option = int.Parse(Console.ReadLine());
+
             switch (option)
             {
                 case 1:
-                    _library.RegistrarBook();
-                    break;
-                case 2:
                     _library.ListarBooks();
                     break;
+
+                case 2:
+                    Console.Write("Inserte el id del libro: ");
+                    int id = int.Parse(Console.ReadLine());
+
+                    Console.Write(
+                        "Inserte el id de la sucursal: "
+                    );
+
+                    int sucursal =
+                        int.Parse(Console.ReadLine());
+
+                    _library.ConsultarDisponibilidad(
+                        id,
+                        sucursal
+                    );
+
+                    break;
+
                 case 3:
-                    Console.WriteLine("Inserte el id del libro");
-                    var id = int.Parse(Console.ReadLine());
-                    _library.FindById(id);
-                    id = 0;
+                    Console.Write("Inserte el id del libro: ");
+                    id = int.Parse(Console.ReadLine());
+
+                    Console.Write(
+                        "Inserte el id de la sucursal: "
+                    );
+
+                    sucursal =
+                        int.Parse(Console.ReadLine());
+
+                    Console.Write(
+                        "Inserte la cantidad a agregar: "
+                    );
+
+                    int cantidad =
+                        int.Parse(Console.ReadLine());
+
+                    _library.ActualizarDisponibilidad(
+                        id,
+                        sucursal,
+                        cantidad
+                    );
+
                     break;
+
                 case 4:
-                    Console.WriteLine("Inserte el id del libro");
+                    Console.Write("Inserte el id del libro: ");
                     id = int.Parse(Console.ReadLine());
-                    _library.EditarBook(id);
-                    id = 0;
+
+                    _library.TotalDisponibleBook(id);
                     break;
+
                 case 5:
-                    Console.WriteLine("Inserte el id del libro");
-                    id = int.Parse(Console.ReadLine());
-                    _library.EliminarBook(id);
-                    id = 0;
+                    Console.Write(
+                        "Inserte el id de la sucursal: "
+                    );
+
+                    sucursal =
+                        int.Parse(Console.ReadLine());
+
+                    _library.TotalInventarioSucursal(
+                        sucursal
+                    );
+
                     break;
+
+                case 6:
+                    _library.MostrarLibrosBajoInventario();
+                    break;
+
+                case 7:
+                    Console.Write("Inserte el id del libro: ");
+                    id = int.Parse(Console.ReadLine());
+
+                    _library.SucursalMayorDisponibilidad(
+                        id
+                    );
+
+                    break;
+
                 case 0:
                     _displayMenu = false;
                     break;
+
+                default:
+                    Console.WriteLine(
+                        "Opcion no valida."
+                    );
+
+                    break;
+            }
+
+            if (_displayMenu)
+            {
+                Console.WriteLine(
+                    "\nPresione ENTER para continuar..."
+                );
+
+                Console.ReadLine();
+                Console.Clear();
             }
         }
 
         public static void DisplayMenu()
         {
-             
+            Console.WriteLine(
+                "====== INVENTARIO POR SUCURSAL ======\n"
+            );
 
-            Console.WriteLine("====== SISTEMA DE BIBLIOTECA ======");
-            Console.WriteLine("1. Agregar libro\n2. Listar libros\n3. Buscar libro por ID\n4. Actualizar libro\n5. Eliminar libro\n0. Salir\n");
-            Console.WriteLine("======= END MENU ======");
+            Console.WriteLine(
+                "1. Mostrar inventario completo\n" +
+                "2. Consultar disponibilidad\n" +
+                "3. Actualizar disponibilidad\n" +
+                "4. Total disponible de un libro\n" +
+                "5. Total de inventario por sucursal\n" +
+                "6. Mostrar libros con bajo inventario\n" +
+                "7. Sucursal con mayor disponibilidad\n" +
+                "0. Salir\n"
+            );
+
+            Console.WriteLine(
+                "======================================"
+            );
+
             InteractionMenu();
         }
-        
+
         public static void InsertarBooks()
         {
-            Book b1 = new Book("Clean Code", "Robert C. Martin", "9780132350884", 12);
-            Book b2 = new Book("The Pragmatic Programmer", "Andrew Hunt", "9780135957059", 12);
-            Book b3 = new Book("C# 12 in a Nutshell", "Joseph Albahari", "9781098147440", 12);
-            Book b4 = new Book("Effective C#", "Bill Wagner", "9780134578962", 12);
-            Book b5 = new Book("CLR via C#", "Jeffrey Richter", "9780735667457", 12);
-            Book b6 = new Book("Head First Design Patterns", "Eric Freeman", "9780596007126", 12);
-            Book b7 = new Book("Design Patterns", "Erich Gamma", "9780201633610", 12);
-            Book b8 = new Book("Refactoring", "Martin Fowler", "9780134757599", 12);
-            Book b9 = new Book("Domain-Driven Design", "Eric Evans", "9780321125217", 12);
-            Book b10 = new Book("Clean Architecture", "Robert C. Martin", "9780134494166", 12);
-            Book b11 = new Book("Pro ASP.NET Core", "Adam Freeman", "9781484279571", 12);
-            Book b12 = new Book("Entity Framework Core in Action", "Jon P Smith", "9781617299963", 12);
-            Book b13 = new Book("ASP.NET Core in Action", "Andrew Lock", "9781617294615", 12);
-            Book b14 = new Book("Algorithms", "Robert Sedgewick", "9780321573513", 12);
-            Book b15 = new Book("Data Structures and Algorithms", "Michael T. Goodrich", "9781118771334", 12);
-            Book b16 = new Book("Introduction to Algorithms", "Thomas H. Cormen", "9780262046305", 12);
-            Book b17 = new Book("Operating System Concepts", "Abraham Silberschatz", "9781119456339", 12);
-            Book b18 = new Book("Computer Networks", "Andrew S. Tanenbaum", "9780132126953", 12);
-            Book b19 = new Book("The Art of Computer Programming", "Donald E. Knuth", "9780201896831", 12);
-            Book b20 = new Book("Programming Pearls", "Jon Bentley", "9780201657883", 12);
-            _library.InsertarBook(b1);
-            _library.InsertarBook(b2);
-            _library.InsertarBook(b3);
-            _library.InsertarBook(b4);
-            _library.InsertarBook(b5);
-            _library.InsertarBook(b6);
-            _library.InsertarBook(b7);
-            _library.InsertarBook(b8);
-            _library.InsertarBook(b9);
-            _library.InsertarBook(b10);
-            //_library.InsertarBook(b11);
-            //_library.InsertarBook(b12);
-            //_library.InsertarBook(b13);
-            //_library.InsertarBook(b14);
-            //_library.InsertarBook(b15);
-            //_library.InsertarBook(b16);
-            //_library.InsertarBook(b17);
-            //_library.InsertarBook(b18);
-            //_library.InsertarBook(b19);
-            //_library.InsertarBook(b20);
+            Book b1 = new Book(
+                "Clean Code",
+                "Robert C. Martin",
+                "9780132350884",
+                5
+            );
+
+            Book b2 = new Book(
+                "The Pragmatic Programmer",
+                "Andrew Hunt",
+                "9780135957059",
+                2
+            );
+
+            Book b3 = new Book(
+                "C# 12 in a Nutshell",
+                "Joseph Albahari",
+                "9781098147440",
+                9
+            );
+
+            Book b4 = new Book(
+                "Effective C#",
+                "Bill Wagner",
+                "9780134578962",
+                3
+            );
+
+            Book b5 = new Book(
+                "CLR via C#",
+                "Jeffrey Richter",
+                "9780735667457",
+                8
+            );
+
+            _library.InsertarBook(b1, 0);
+            _library.InsertarBook(
+                new Book(
+                    "Clean Code",
+                    "Robert C. Martin",
+                    "9780132350884",
+                    3
+                ),
+                1
+            );
+
+            _library.InsertarBook(
+                new Book(
+                    "Clean Code",
+                    "Robert C. Martin",
+                    "9780132350884",
+                    8
+                ),
+                2
+            );
+
+            _library.InsertarBook(b2, 0);
+
+            _library.InsertarBook(
+                new Book(
+                    "The Pragmatic Programmer",
+                    "Andrew Hunt",
+                    "9780135957059",
+                    7
+                ),
+                1
+            );
+
+            _library.InsertarBook(
+                new Book(
+                    "The Pragmatic Programmer",
+                    "Andrew Hunt",
+                    "9780135957059",
+                    4
+                ),
+                2
+            );
+
+            _library.InsertarBook(b3, 0);
+
+            _library.InsertarBook(
+                new Book(
+                    "C# 12 in a Nutshell",
+                    "Joseph Albahari",
+                    "9781098147440",
+                    1
+                ),
+                1
+            );
+
+            _library.InsertarBook(
+                new Book(
+                    "C# 12 in a Nutshell",
+                    "Joseph Albahari",
+                    "9781098147440",
+                    6
+                ),
+                2
+            );
+
+            _library.InsertarBook(b4, 0);
+
+            _library.InsertarBook(
+                new Book(
+                    "Effective C#",
+                    "Bill Wagner",
+                    "9780134578962",
+                    5
+                ),
+                1
+            );
+
+            _library.InsertarBook(
+                new Book(
+                    "Effective C#",
+                    "Bill Wagner",
+                    "9780134578962",
+                    2
+                ),
+                2
+            );
+
+            _library.InsertarBook(b5, 0);
+
+            _library.InsertarBook(
+                new Book(
+                    "CLR via C#",
+                    "Jeffrey Richter",
+                    "9780735667457",
+                    4
+                ),
+                1
+            );
+
+            _library.InsertarBook(
+                new Book(
+                    "CLR via C#",
+                    "Jeffrey Richter",
+                    "9780735667457",
+                    7
+                ),
+                2
+            );
+
             Console.Clear();
         }
     }
-};
- 
+}

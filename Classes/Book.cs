@@ -65,4 +65,24 @@ public class Book
         Quantity += newQuantity;
         Console.WriteLine($"Stock actualizado de: {oldQuantity} to : {Quantity}");
     }
+
+    public void DisplayBook(string sucursarName)
+    {
+        Console.WriteLine(
+                    "[--------------- Información del libro ------------]"
+                );
+
+        Console.WriteLine(
+            $"Id: {Id}\n" +
+            $"Título: {Title}\n" +
+            $"Autor: {Author}\n" +
+            $"ISBN: {ISBN}\n" +
+            $"Cantidad: {Quantity}\n" +
+            $"Sucursal: { sucursarName}"
+        );
+
+        Console.WriteLine(
+            "----------------------------------------------------"
+        );
+    }
 }
